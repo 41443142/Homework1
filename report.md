@@ -4,34 +4,128 @@
 
 ## 解題說明
 
-本題要求實現一個遞迴函式，計算從 $1$ 到 $n$ 的連加總和。
+###第一題：Ackermann 函數
 
-### 解題策略
+需要用遞迴與非遞迴兩種方式來解決問題
+輸入整數m和n
 
-1. 使用遞迴函式將問題拆解為更小的子問題：
-   $$\Sigma(n) = n + \Sigma(n-1)$$
-2. 當 $n \leq 1$ 時，返回 $n$ 作為遞迴的結束條件。  
-3. 主程式呼叫遞迴函式，並輸出計算結果。
+函式A:遞迴版Ackermann
+輸入條件三個:
+
+1.m==0時,回傳n+1
+2.n==0時,回傳函式A,並設m=m-1,n=1
+3.其他狀況時,回傳函式A,並設m=m-1,n=A(m,n-1)
+
+經過計算後,回傳函式A值
+
+函式B:非遞迴版Ackermann
+
+使用自製堆疊函式push_stack和pop_stack達成
+push_stack使用動態擴容避免動態記憶體空間用完,同時可以將數值推入堆疊的top
+pop_stack推出數值並回傳給函式B
+
+使用動態記憶體配置,設定top=-1
+用push_stack推入初始m
+如果top>=0,推出top數值判斷與計算
+如果m==0,n+1
+否則判斷n==0,n=1
+其他則判斷推入數值m-1,再推入數值m,最後n-1
+清空堆疊函式最後回傳數值n
 
 ## 程式實作
 
-以下為主要程式碼：
+以下為第一題程式碼：
 
 ```cpp
-#include <iostream>
+#include<iostream>
+#include<cmath>
+
 using namespace std;
 
-int sigma(int n) {
-    if (n < 0)
-        throw "n < 0";
-    else if (n <= 1)
-        return n;
-    return n + sigma(n - 1);
+void push_stack(int*& s, int& top, int& capacity, int val)
+{
+	top++;
+	if (top >= capacity)
+	{
+		int new_capacity = capacity * 2;
+		int* new_s = new int[new_capacity];
+		for (int i = 0; i < capacity; i++)
+		{
+			new_s[i] = s[i];
+		}
+		delete[] s;
+		s = new_s;
+		capacity = new_capacity;
+	}
+	s[top] = val;
 }
 
-int main() {
-    int result = sigma(3);
-    cout << result << '\n';
+int pop_stack(int*& s, int& top)
+{
+	int val = s[top];
+	top--;
+	return val;
+}
+
+// 遞迴版本
+int A(int m, int n)
+{
+	if (m == 0)
+	{
+		return n + 1;
+	}
+	else if (n == 0)
+	{
+		return A(m - 1, 1);
+	}
+	else
+	{
+		return A(m - 1, A(m, n - 1));
+	}
+}
+
+// 非遞迴版本 (自訂 Stack)
+int B(int m, int n)
+{
+	int capacity = 16;
+	int top = -1;
+	int* s = new int[capacity];
+	push_stack(s, top, capacity, m);
+	while (top >= 0)
+	{
+		m = pop_stack(s, top);
+		if (m == 0)
+		{
+			n++;
+		}
+		else if (n == 0)
+		{
+			push_stack(s, top, capacity, m - 1);
+			n = 1;
+		}
+		else
+		{
+			push_stack(s, top, capacity, m - 1);
+			push_stack(s, top, capacity, m);
+			n--;
+		}
+	}
+	delete[] s;
+	return n;
+}
+
+int main()
+{
+	int m, n, a, b;
+	while (cin >> m >> n)
+	{
+		a = A(m, n);
+		cout << a << endl;
+
+		b = B(m, n);
+		cout << b << endl;
+	}
+	return 0;
 }
 ```
 

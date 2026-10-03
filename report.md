@@ -154,11 +154,13 @@ $m = 4$：$O(2^{2^{\cdot^{\cdot^2}}})$（高度為 $n+3$ 的 2 的塔），呈�
 整體空間複雜度：$O(A(m, n))
 
 $詳細分析：
-	遞迴版 A(m, n)：
+
+遞迴版 A(m, n)：
+
 		佔用記憶體：系統呼叫堆疊（Call Stack）。
 		空間大小：取決於最大遞迴深度。當 $m=3, n \ge 11$ 或 $m \ge 4$ 時，遞迴深度超過 Stack 限制，會發生 Stack Overflow。
 
-	非遞迴版 B(m, n)：
+非遞迴版 B(m, n)：
 
 		佔用記憶體：系統堆積區（Heap Memory，經由 new int[capacity] 配置）。
 		空間大小：取決於自訂 Stack 中元素數量的最大值。雖然突破了 Call Stack 的大小限制，但在 $m \ge 4$ 時，Stack 佔用的 Heap 記憶體會暴增至數 GB 甚至數 TB，最終引發 Out of Memory（記憶體耗盡）。

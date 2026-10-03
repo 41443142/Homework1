@@ -20,9 +20,9 @@
 
 函式B:非遞迴版Ackermann
 
-使用自製堆疊函式push_stack和pop_stack達成
-push_stack使用動態擴容避免動態記憶體空間用完,同時可以將數值推入堆疊的top
-pop_stack推出數值並回傳給函式B
+-使用自製堆疊函式push_stack和pop_stack達成
+-push_stack使用動態擴容避免動態記憶體空間用完,同時可以將數值推入堆疊的top
+-pop_stack推出數值並回傳給函式B
 
 使用動態記憶體配置,設定top=-1
 用push_stack推入初始m

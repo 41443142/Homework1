@@ -38,11 +38,19 @@
 
 設定函式Powerset:
 
-1. 設定初始選定值index==0,選定集合為""
+1. 設定初始選定值index==0,選定組合為""
 2. 再來開啟第一步,執行選與不選的遞迴
+3. 執行遞迴同時,將選完的組合存入字串current
+4. 如果選取值index==a的長度,印出( ,進入迴圈執行印出選定組合,在印出)
+5. 最後迴傳答案
 
 		- 例如:輸入字串a,b,c
    			不選a不選b不選c,答案印出()
+   			不選a不選b選c,答案印出(c)
+   			不選a選b不選c,答案印出(b)
+   			不選a選b選c,答案印出(b,c)
+   			選a不選b不選c,答案印出(a)
+   			以此類推直到印出所有答案
 
 ## 程式實作
 
@@ -141,7 +149,51 @@ int main()
 }
 ```
 
+以下為第二題程式碼：
+
+```cpp
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+
+void Powerset(const string& a, int index, string current)
+{
+	if (index == a.length())
+	{
+		cout << "(";
+		for (size_t i = 0; i < current.length(); i++)
+		{
+			cout << current[i];
+			if (i + 1 < current.length())
+			{
+				cout << ", ";
+			}
+		}
+		cout << ")" << endl;
+		return;
+	}
+
+	Powerset(a, index + 1, current);
+
+	Powerset(a, index + 1, current + a[index]);
+}
+
+int main()
+{
+	string a;
+	while (cin >> a)
+	{
+		Powerset(a, 0, "");
+	}
+	return 0;
+}
+```
+
 ## 效能分析
+
+### 第一題
 
 1. 時間複雜度:
 
@@ -172,6 +224,8 @@ int main()
 
 		佔用記憶體：系統堆積區（Heap Memory，經由 new int[capacity] 配置）。
 		空間大小：取決於自訂 Stack 中元素數量的最大值。雖然突破了 Call Stack 的大小限制，但在 $m \ge 4$ 時，Stack 佔用的 Heap 記憶體會暴增至數 GB 甚至數 TB，最終引發 Out of Memory（記憶體耗盡）。
+
+### 第二題
 
 ## 測試與驗證
 

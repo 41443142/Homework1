@@ -4,33 +4,10 @@
 
 ## 解題說明
 
-### 第一題：Ackermann 函數
+### 第一題：實作 Polynomial 類別及其抽象資料型別 (ADT)
 
-需要用遞迴與非遞迴兩種方式來解決問題
-輸入整數m和n
-
-函式A:遞迴版Ackermann
-輸入條件三個:
-
-1. m==0時,回傳n+1
-2. n==0時,回傳函式A,並設m=m-1,n=1
-3. 其他狀況時,回傳函式A,並設m=m-1,n=A(m,n-1)
-
-經過計算後,回傳函式A值
-
-函式B:非遞迴版Ackermann
-
-1. 使用動態記憶體配置,設定top=-1
-2. 用push_stack推入初始m
-3. 如果top>=0,推出top數值判斷與計算
-4. 如果m==0,n+1
-5. 否則判斷n==0,n=1
-6. 其他則判斷推入數值m-1,再推入數值m,最後n-1
-7. 清空堆疊函式最後回傳數值n
-
-使用自製堆疊函式push_stack和pop_stack達成
-- push_stack使用動態擴容避免動態記憶體空間用完,同時可以將數值推入堆疊的top
-- pop_stack推出數值並回傳給函式B
+我透過將兩張圖的程式碼組合在一起，使的term與Polynomial類別搭起框架，然後再填入add,mult還有eval功能，並且我加入擴容部分，
+使termArray不用擔心空間用完
 
 ### 第二題:冪集合
 
@@ -54,138 +31,166 @@
 
 ## 程式實作
 
-以下為第一題程式碼：
-
-```cpp
-#include<iostream>
-#include<cmath>
-
-using namespace std;
-
-void push_stack(int*& s, int& top, int& capacity, int val)
-{
-	top++;
-	if (top >= capacity)
-	{
-		int new_capacity = capacity * 2;
-		int* new_s = new int[new_capacity];
-		for (int i = 0; i < capacity; i++)
-		{
-			new_s[i] = s[i];
-		}
-		delete[] s;
-		s = new_s;
-		capacity = new_capacity;
-	}
-	s[top] = val;
-}
-
-int pop_stack(int*& s, int& top)
-{
-	int val = s[top];
-	top--;
-	return val;
-}
-
-// 遞迴版本
-int A(int m, int n)
-{
-	if (m == 0)
-	{
-		return n + 1;
-	}
-	else if (n == 0)
-	{
-		return A(m - 1, 1);
-	}
-	else
-	{
-		return A(m - 1, A(m, n - 1));
-	}
-}
-
-// 非遞迴版本 (自訂 Stack)
-int B(int m, int n)
-{
-	int capacity = 16;
-	int top = -1;
-	int* s = new int[capacity];
-	push_stack(s, top, capacity, m);
-	while (top >= 0)
-	{
-		m = pop_stack(s, top);
-		if (m == 0)
-		{
-			n++;
-		}
-		else if (n == 0)
-		{
-			push_stack(s, top, capacity, m - 1);
-			n = 1;
-		}
-		else
-		{
-			push_stack(s, top, capacity, m - 1);
-			push_stack(s, top, capacity, m);
-			n--;
-		}
-	}
-	delete[] s;
-	return n;
-}
-
-int main()
-{
-	int m, n, a, b;
-	while (cin >> m >> n)
-	{
-		a = A(m, n);
-		cout << a << endl;
-
-		b = B(m, n);
-		cout << b << endl;
-	}
-	return 0;
-}
-```
-
-以下為第二題程式碼：
+以下為第一二題共用程式碼：
 
 ```cpp
 #include <iostream>
-#include <string>
-
+#include <cmath>
 using namespace std;
 
-
-void Powerset(const string& a, int index, string current)
+class Polynomial;
+class Term
 {
-	if (index == a.length())
-	{
-		cout << "(";
-		for (size_t i = 0; i < current.length(); i++)
+	friend class Polynomial;
+	friend ostream& operator<<(ostream& os, const Polynomial& p);
+	private:
+		float coef;
+		int exp;
+};
+class Polynomial
+{
+	private:
+		Term *termArray;
+		int capacity;
+		int terms;
+	public:
+		Polynomial() :capacity(2), terms(0)
 		{
-			cout << current[i];
-			if (i + 1 < current.length())
-			{
-				cout << ", ";
-			}
+			termArray = new Term[capacity];
 		}
-		cout << ")" << endl;
-		return;
+		Polynomial Add(const Polynomial b)
+		{
+			Polynomial c;
+			int aPos = 0, bPos = 0;
+			while((aPos<terms)&&(bPos<b.terms))
+			{
+				if (termArray[aPos].exp == b.termArray[bPos].exp)
+				{
+					float t = termArray[aPos].coef + b.termArray[bPos].coef;
+					if (t) c.newTerm(t,termArray[aPos].exp);
+					aPos++;
+					bPos++;
+				}
+				else if (termArray[aPos].exp < b.termArray[bPos].exp)
+				{
+					c.newTerm(b.termArray[bPos].coef,b.termArray[bPos].exp);
+					bPos++;
+				}
+				else
+				{
+					c.newTerm(termArray[aPos].coef, termArray[aPos].exp);
+					aPos++;
+				}
+			}
+			for (; aPos < terms; aPos++)
+			{
+				c.newTerm(termArray[aPos].coef,termArray[aPos].exp);
+			}
+			for (; bPos < b.terms; bPos++)
+			{
+				c.newTerm(b.termArray[bPos].coef, b.termArray[bPos].exp);
+			}
+			return c;
+		}
+		Polynomial Mult(Polynomial b)
+		{
+			Polynomial d;
+			for (int i = 0; i < terms; i++)
+			{
+				Polynomial temp;
+				for (int j = 0; j < b.terms; j++)
+				{
+					float ncoef= termArray[i].coef * b.termArray[j].coef;
+					int nexp = termArray[i].exp + b.termArray[j].exp;
+					if (ncoef != 0)
+					{
+						temp.newTerm(ncoef, nexp);
+					}
+				}
+				d = d.Add(temp);
+			}
+			return d;
+		}
+		float Eval(float x)
+		{
+			float total = 0;
+			for (int i = 0; i < terms; i++) {
+				total += termArray[i].coef * pow(x, termArray[i].exp);
+			}
+			return total;
+		}
+		void newTerm(const float theCoef, const int theExp)
+		{
+			if (theCoef == 0)return;
+			if (terms == capacity)
+			{
+				capacity *= 2;
+				Term* temp = new Term[capacity];
+				copy(termArray,termArray+terms,temp);
+				delete []termArray;
+				termArray = temp;
+			}
+			termArray[terms].coef = theCoef;
+			termArray[terms++].exp = theExp;
+		}
+		friend ostream& operator<<(ostream& os, const Polynomial& p);
+		friend istream& operator>>(istream& is, Polynomial& p);
+};
+ostream& operator<<(ostream& os, const Polynomial& p) {
+	if (p.terms == 0) {
+		os << "0";
+		return os;
 	}
-
-	Powerset(a, index + 1, current);
-
-	Powerset(a, index + 1, current + a[index]);
+	for (int i = 0; i < p.terms; i++) {
+		if (i > 0 && p.termArray[i].coef > 0) os << "+";
+		os << p.termArray[i].coef << "x^" << p.termArray[i].exp;
+	}
+	return os;
 }
 
+istream& operator>>(istream& is, Polynomial& p) {
+	int numTerms;
+	cout << "輸入非零項的總個數: ";
+	is >> numTerms;
+	for (int i = 0; i < numTerms; i++) {
+		float c;
+		int e;
+		cout << "輸入第 " << i + 1 << " 項的係數與指數: ";
+		is >> c >> e;
+		p.newTerm(c, e);
+	}
+	return is;
+}
 int main()
 {
-	string a;
-	while (cin >> a)
+	Polynomial p1, p2, p3, p4,p5;
+	int x, op;
+	cout << "=== 開始輸入第一個多項式 ===" << endl;
+	cin >> p1;
+	cout << "=== 開始輸入第二個多項式 ===" << endl;
+	cin >> p2;
+	p3 = p1.Add(p2);
+	p4 = p1.Mult(p2);
+	cout << "選功能:";
+	cin >> op;
+	switch(op)
 	{
-		Powerset(a, 0, "");
+		case 1:
+			p3 = p1.Add(p2);
+			cout << "相加=>" << p3 << endl;
+			break;
+		case 2:
+			p4 = p1.Mult(p2);
+			cout << "相乘=>" << p4 << endl;
+			break;
+		case 3:
+			cin >> x;
+			cout << "相加=" << p3.Eval(x) << endl;
+			cout << "相乘=" << p4.Eval(x) << endl;
+			break;
+		default:
+			break;
+
 	}
 	return 0;
 }

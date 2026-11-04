@@ -230,6 +230,8 @@ int main()
 	- 每次外層迴圈算出包含 $n$ 項的 temp 後，會呼叫一次 d = d.Add(temp)
 	- 隨迴圈推進，d 的項數會從 n 逐步累積到 m x n 在第 i 次疊加時，Add 的時間開銷為 $\mathcal{O}(i \cdot n + n)$
 	- 總時間為 $\sum_{i=1}^{m} \mathcal{O}(i \cdot n) = \mathcal{O}(m^2 \cdot n)$
+2. 空間複雜度：$O(m \cdot n)$
+> 最終相乘結果 d 在最壞情況下（所有項指數組合皆不同）最多會產生 m x n 項
 
 ### 第二題
 

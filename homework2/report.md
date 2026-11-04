@@ -229,6 +229,7 @@ int main()
 	- 外層迴圈走訪 $A$ 的 $m$ 個項，內層走訪 $B$ 的 $n$ 個項，單項相乘計算共執行 m x n次
 	- 每次外層迴圈算出包含 $n$ 項的 temp 後，會呼叫一次 d = d.Add(temp)
 	- 隨迴圈推進，d 的項數會從 n 逐步累積到 m x n 在第 i 次疊加時，Add 的時間開銷為 $\mathcal{O}(i \cdot n + n)$
+	- 總時間為 $\sum_{i=1}^{m} \mathcal{O}(i \cdot n) = \mathcal{O}(m^2 \cdot n)$
 
 ### 第二題
 
